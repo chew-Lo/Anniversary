@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Six Years Together</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --white: #ffffff;
+    --mist: #f7f2fd;
+    --lilac: #e6d9fa;
+    --purple: #8b5cf6;
+    --deep: #5b21b6;
+    --ink: #2b2140;
+    --soft-ink: #6d6285;
+    --serif: "Fraunces", Georgia, serif;
+    --sans: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--sans);
+    background: var(--white);
+    color: var(--ink);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  body.locked { overflow: hidden; }
+
+  :focus-visible { outline: 3px solid var(--purple); outline-offset: 3px; }
+  button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+  .heart { width: 1em; height: 1em; fill: currentColor; display: inline-block; }
+
+  /* ---------- Opening screen ---------- */
+  #gate {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--white);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1.5rem; text-align: center; padding: 2rem;
+    transition: opacity .9s ease, visibility .9s ease;
+  }
+  #gate.gone { opacity: 0; visibility: hidden; }
+  #gate p { font-family: var(--serif); font-style: italic; font-size: 1.3rem; color: var(--soft-ink); }
+  #openHeart {
+    width: clamp(150px, 38vw, 220px); color: var(--purple);
+    filter: drop-shadow(0 14px 24px rgba(139, 92, 246, .35));
+    animation: beat 1.6s ease-in-out infinite;
+  }
+  #openHeart:hover { color: var(--deep); }
+  #openHeart svg { width: 100%; height: 100%; fill: currentColor; }
+  @keyframes beat {
+    0%, 100% { transform: scale(1); }
+    14% { transform: scale(1.1); }
+    28% { transform: scale(1); }
+    42% { transform: scale(1.07); }
+  }
+
+  /* ---------- Floating hearts and click hearts ---------- */
+  #hearts { position: fixed; inset: 0; pointer-events: none; z-index: 5; overflow: hidden; }
+  .float-heart {
+    position: absolute; bottom: -40px; color: var(--purple); opacity: 0;
+    animation: rise linear forwards;
+  }
+  @keyframes rise {
+    0% { transform: translateY(0) rotate(0); opacity: 0; }
+    10% { opacity: .35; }
+    100% { transform: translateY(-110vh) rotate(25deg); opacity: 0; }
+  }
+  .burst-heart {
+    position: fixed; z-index: 50; pointer-events: none; color: var(--purple);
+    animation: burst .9s ease-out forwards;
+  }
+  @keyframes burst {
+    0% { transform: translate(-50%, -50%) scale(.4); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1); opacity: 0; }
+  }
+
+  /* ---------- Layout ---------- */
+  main { position: relative; z-index: 10; }
+  section { padding: clamp(4rem, 9vw, 7rem) 1.5rem; }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  h2 {
+    font-family: var(--serif); font-weight: 600; font-size: clamp(1.9rem, 5vw, 3rem);
+    line-height: 1.15; margin-bottom: .6rem; color: var(--deep);
+  }
+  .lead { color: var(--soft-ink); max-width: 52ch; margin-bottom: 2.5rem; }
+  .alt { background: var(--mist); }
+
+  /* ---------- Hero ---------- */
+  #hero {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    text-align: center;
+  }
+  #hero .names { font-family: var(--serif); font-style: italic; font-size: clamp(1.2rem, 3vw, 1.6rem); color: var(--soft-ink); }
+  #hero h1 {
+    font-family: var(--serif); font-weight: 600; line-height: .95;
+    font-size: clamp(4.5rem, 20vw, 12rem); color: var(--deep);
+    margin: .4rem 0 1rem; letter-spacing: -0.03em;
+  }
+  #hero h1 .heart { color: var(--purple); font-size: .5em; vertical-align: .35em; }
+  #hero .sub { font-size: 1.15rem; color: var(--soft-ink); }
+  .scroll-hint { margin-top: 3rem; color: var(--purple); animation: bob 2s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translateY(8px); } }
+
+  /* ---------- Counter ---------- */
+  .counter { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 1rem; }
+  .unit {
+    background: var(--white); border: 2px solid var(--lilac); border-radius: 22px;
+    padding: 1.4rem .5rem; text-align: center;
+  }
+  .unit b { display: block; font-family: var(--serif); font-size: clamp(2rem, 6vw, 3.2rem); color: var(--purple); line-height: 1; font-weight: 600; }
+  .unit span { font-size: .95rem; color: var(--soft-ink); }
+
+  /* ---------- Gallery ---------- */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+  .photo {
+    position: relative; aspect-ratio: 4 / 5; border-radius: 18px; overflow: hidden;
+    background: var(--lilac); display: block; width: 100%;
+    transition: transform .25s ease;
+  }
+  .photo:hover { transform: rotate(-1.2deg) scale(1.02); }
+  .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo .ph { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--purple); font-size: 2.4rem; gap: .4rem; }
+  .photo .ph small { font-size: .85rem; color: var(--soft-ink); }
+  .photo .cap {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 2rem 1rem .8rem; text-align: left;
+    background: linear-gradient(transparent, rgba(43, 33, 64, .7)); color: #fff; font-size: .95rem;
+  }
+
+  #lightbox {
+    position: fixed; inset: 0; z-index: 90; background: rgba(43, 33, 64, .92);
+    display: none; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; padding: 1.5rem;
+  }
+  #lightbox.open { display: flex; }
+  #lightbox .frame { max-width: min(92vw, 900px); max-height: 75vh; display: flex; }
+  #lightbox img { max-width: 100%; max-height: 75vh; border-radius: 14px; object-fit: contain; }
+  #lightbox video { max-width: 100%; max-height: 75vh; border-radius: 14px; background: #000; }
+  .photo video { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+  .photo .play {
+    position: absolute; top: .7rem; right: .7rem; width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(139, 92, 246, .92); color: #fff; display: flex; align-items: center; justify-content: center; font-size: .85rem; padding-left: 3px;
+  }
+  #lightbox .ph { background: var(--lilac); color: var(--purple); width: min(80vw, 420px); aspect-ratio: 4/5; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+  #lightbox p { color: #fff; font-family: var(--serif); font-style: italic; font-size: 1.2rem; text-align: center; }
+  .lb-btn { position: absolute; color: #fff; font-size: 2rem; width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,.12); }
+  .lb-btn:hover { background: var(--purple); }
+  #lbClose { top: 1rem; right: 1rem; }
+  #lbPrev { left: 1rem; top: 50%; }
+  #lbNext { right: 1rem; top: 50%; }
+
+  /* ---------- Video ---------- */
+  .video-box {
+    border-radius: 24px; overflow: hidden; background: var(--ink); aspect-ratio: 16 / 9;
+    border: 4px solid var(--lilac); position: relative;
+  }
+  .video-box video { width: 100%; height: 100%; display: block; background: #000; }
+  .video-box .empty {
+    position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+    background: var(--lilac); color: var(--deep); font-family: var(--serif); font-style: italic; text-align: center; padding: 1rem;
+  }
+  .video-box.no-video .empty { display: flex; }
+
+  /* ---------- Letter and surprise ---------- */
+  .letter {
+    background: var(--white); border: 2px solid var(--lilac); border-radius: 26px;
+    padding: clamp(1.5rem, 5vw, 3rem); max-width: 680px; margin: 0 auto;
+    font-family: var(--serif); font-size: 1.15rem; line-height: 1.8;
+  }
+  .letter p + p { margin-top: 1rem; }
+  .letter .sign { margin-top: 1.5rem; font-style: italic; color: var(--deep); }
+  .center { text-align: center; }
+  .btn {
+    margin-top: 2rem; background: var(--purple); color: #fff; padding: .95rem 2rem;
+    border-radius: 999px; font-weight: 500; font-size: 1.05rem; transition: background .2s, transform .2s;
+  }
+  .btn:hover { background: var(--deep); transform: translateY(-2px); }
+  #surprise {
+    font-family: var(--serif); font-size: clamp(1.8rem, 6vw, 3.4rem); color: var(--deep); font-weight: 600;
+    margin-top: 2rem; min-height: 1.3em; opacity: 0; transition: opacity 1s ease;
+  }
+  #surprise.show { opacity: 1; }
+
+  footer { text-align: center; padding: 3rem 1.5rem 5rem; color: var(--soft-ink); font-size: .95rem; position: relative; z-index: 10; }
+  footer .heart { color: var(--purple); }
+
+  /* ---------- Music button ---------- */
+  #music {
+    position: fixed; right: 1rem; bottom: 1rem; z-index: 60; width: 56px; height: 56px; border-radius: 50%;
+    background: var(--purple); color: #fff; font-size: 1.4rem; box-shadow: 0 10px 24px rgba(139, 92, 246, .4);
+    display: none; align-items: center; justify-content: center;
+  }
+  #music.on { display: flex; }
+  #music.playing { animation: beat 1.6s ease-in-out infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+
+<body class="locked">
+
+<!-- Heart shape used everywhere. Do not delete. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="h" viewBox="0 0 24 24">
+    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+  </symbol>
+</svg>
+
+<!-- ======================= MUSIC =======================
+     Your song file goes in the assets folder. Change the name in src if needed. -->
+<audio id="song" src="assets/music.mp3" loop preload="auto"></audio>
+<button id="music" aria-label="Play or pause music" title="Music">&#9835;</button>
+
+<!-- Opening screen -->
+<div id="gate">
+  <button id="openHeart" aria-label="Tap the heart to open">
+    <svg viewBox="0 0 24 24"><use href="#h"/></svg>
+  </button>
+  <!-- CHANGE THIS TEXT if you want -->
+  <p>Itap nemo ang heart, Bakikang🤭 </p>
+</div>
+
+<div id="hearts"></div>
+
+<main>
+
+  <!-- ======================= HERO ======================= -->
+  <section id="hero">
+    <div>
+      <!-- CHANGE THE NAMES: put her name and yours -->
+      <p class="names">Bakikang 💜 Cachupoy</p>
+      <h1>6 <svg class="heart"><use href="#h"/></svg></h1>
+      <p class="sub">Happy 6 years anniversary Love</p>
+      <div class="scroll-hint" aria-hidden="true">Iscroll down nemo &#8595;</div>
+    </div>
+  </section>
+
+  <!-- ======================= COUNTER ======================= -->
+  <section class="alt">
+    <div class="wrap">
+      <h2>Ang tagal na natin</h2>
+      <p class="lead">tama na to, CHAR!!</p>
+      <div class="counter" id="counter" aria-live="off">
+        <div class="unit"><b id="c-years">0</b><span>years</span></div>
+        <div class="unit"><b id="c-months">0</b><span>months</span></div>
+        <div class="unit"><b id="c-days">0</b><span>days</span></div>
+        <div class="unit"><b id="c-hours">0</b><span>hours</span></div>
+        <div class="unit"><b id="c-minutes">0</b><span>minutes</span></div>
+        <div class="unit"><b id="c-seconds">0</b><span>seconds</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= PHOTOS ======================= -->
+  <section>
+    <div class="wrap">
+      <h2>Our Piburit mumints</h2>
+      <p class="lead">Tap mo tapos lalaki yarn</p>
+      <div class="grid" id="gallery"></div>
+    </div>
+  </section>
+
+  <!-- ======================= VIDEO ======================= -->
+  <section class="alt">
+    <div class="wrap">
+      <h2>Iplay mo ngani</h2>
+      <p class="lead">naiyak ka ba?</p>
+      <div class="video-box" id="videoBox">
+        <!-- Your main video. Change the file name in src if needed. -->
+        <video id="vid" controls playsinline preload="metadata" src="assets/edit.mp4" poster=""></video>
+        <div class="empty">Your video goes here. Add the file path in the code.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= LETTER ======================= -->
+  <section>
+    <div class="wrap center">
+      <h2>Hi Bakikang🤭</h2>
+      <p class="lead" style="margin-inline:auto;">wag ka iiyak love</p>
+      <div class="letter" style="text-align:left;">
+        <p>Happy 6th anniversary, my Love.</p>
+        <p>Getting here wasn't easy, but I enjoyed every moment. Hindi man tayo perfect, 
+          kahit palagi kang nagagalit sa akin, kahit lagi mo akong sinasaktan, I will always find my way back to you. 
+          I hope it goes the same way for you, kahit palagi akong nang-aasar at laging busy. 
+          I'm sorry, love, ganun lang talaga ako. But I always try to be the best version of myself because of you. 
+          I want to build a future for you, me, and our future 8 children.</p>
+        <p>
+          I can see you doing the same thing Love. Kahit kulang ka sa tulog, kahit palagi kang naiinis sa mundo, 
+          sa ibang tao, or sa akin, hindi ka sumusuko sa mga pangarap mo, and that makes you even more attractive, 
+          kahit maganda ka na mas lalo ka pang gumaganda lalo na pag lumalaki yung pisngi mo. I'm very proud of you.
+        </p>
+        <p>Yun lang, love. I love you very much, and I hope you never stop loving me too. See you SOON, hopefully sooner than I expected. I Love you dear!
+        </p>
+        <p class="sign">Sincerely,<br>Cachupoy💜</p>
+      </div>
+      <button class="btn" id="surpriseBtn">One more thing</button>
+      <div id="surprise" aria-live="polite"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Made with <svg class="heart"><use href="#h"/></svg> for you
+</footer>
+
+<!-- Photo viewer -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <button class="lb-btn" id="lbClose" aria-label="Close">&times;</button>
+  <button class="lb-btn" id="lbPrev" aria-label="Previous photo">&#8249;</button>
+  <button class="lb-btn" id="lbNext" aria-label="Next photo">&#8250;</button>
+  <div class="frame" id="lbFrame"></div>
+  <p id="lbCap"></p>
+</div>
+
+<script>
+
+const START = { year: 2020, month: 10, day: 23, hour: 0, minute: 0 };
+
+
+const PHOTOS = [
+  { src: "assets/mama.jfif", caption: "I love this picture and this day very memorable!" },   // PHOTO 1
+  { src: "assets/flower.mp4", caption: "Feelingera ka talaga wagas pa makaiwas ako na nga to" },   // PHOTO 2
+  { src: "assets/bimb.jfif", caption: "ESMIRINGHOY😛" },   // PHOTO 3
+  { src: "assets/stayc.mp4", caption: "palpak na steak, hindi talaga ako marunong magsteak dear, sa ibang paraan mo naman ako nagamit" },   // PHOTO 4
+  { src: "assets/asd.jfif", caption: "you're so pretty here" },   // PHOTO 5
+  { src: "assets/bday.mp4", caption: "Happy Birthday To You! panget quality palitan na natin phone mo Iphone 18 pro max" },   // PHOTO 6
+  { src: "assets/puroy.jfif", caption: "Gawa na tayo ng puroy Love😔" },   // PHOTO 7
+  { src: "assets/loki.mp4", caption: "HAHAHAHA eto yung the best, I miss you Loki" }    // PHOTO 8
+];
+
+/* SURPRISE_TEXT: shows when she taps "One more thing" */
+const SURPRISE_TEXT = "Esmiringhoy Soon HAHAHAHA";
+
+/* ==========================================================
+   CODE BELOW: you do not need to change anything
+   ========================================================== */
+
+const $ = (id) => document.getElementById(id);
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const heartSvg = '<svg class="heart" style="width:1em;height:1em"><use href="#h"/></svg>';
+
+/* ---------- Opening screen and music ---------- */
+const song = $("song");
+const musicBtn = $("music");
+const hasSong = !!(song && song.getAttribute("src"));
+
+if (hasSong) musicBtn.classList.add("on");
+
+function setMusic(play) {
+  if (!hasSong) return;
+  if (play) {
+    song.play().then(() => musicBtn.classList.add("playing")).catch(() => {});
+  } else {
+    song.pause();
+    musicBtn.classList.remove("playing");
+  }
+}
+
+$("openHeart").addEventListener("click", (e) => {
+  $("gate").classList.add("gone");
+  document.body.classList.remove("locked");
+  setMusic(true);
+  burst(e.clientX || innerWidth / 2, e.clientY || innerHeight / 2, 18);
+  startFloating();
+});
+
+if (musicBtn) musicBtn.addEventListener("click", () => setMusic(song.paused));
+
+/* ---------- Hearts ---------- */
+function startFloating() {
+  if (reduceMotion) return;
+  setInterval(() => {
+    if (document.hidden) return;
+    const h = document.createElement("span");
+    h.className = "float-heart";
+    h.innerHTML = heartSvg;
+    h.style.left = Math.random() * 100 + "vw";
+    h.style.fontSize = 12 + Math.random() * 22 + "px";
+    const dur = 9 + Math.random() * 8;
+    h.style.animationDuration = dur + "s";
+    $("hearts").appendChild(h);
+    setTimeout(() => h.remove(), dur * 1000);
+  }, 900);
+}
+
+function burst(x, y, count = 7) {
+  if (reduceMotion) return;
+  for (let i = 0; i < count; i++) {
+    const h = document.createElement("span");
+    h.className = "burst-heart";
+    h.innerHTML = heartSvg;
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 40 + Math.random() * 90;
+    h.style.left = x + "px";
+    h.style.top = y + "px";
+    h.style.fontSize = 14 + Math.random() * 18 + "px";
+    h.style.setProperty("--dx", Math.cos(angle) * dist + "px");
+    h.style.setProperty("--dy", Math.sin(angle) * dist - 30 + "px");
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 900);
+  }
+}
+
+document.addEventListener("pointerdown", (e) => {
+  if (document.body.classList.contains("locked")) return;
+  burst(e.clientX, e.clientY);
+});
+
+/* ---------- Counter ---------- */
+const startDate = new Date(START.year, START.month - 1, START.day, START.hour, START.minute);
+
+function updateCounter() {
+  const now = new Date();
+  let years = now.getFullYear() - startDate.getFullYear();
+  let anchor = new Date(startDate);
+  anchor.setFullYear(startDate.getFullYear() + years);
+  if (anchor > now) {
+    years--;
+    anchor.setFullYear(startDate.getFullYear() + years);
+  }
+  let months = 0;
+  while (true) {
+    const next = new Date(anchor);
+    next.setMonth(anchor.getMonth() + 1);
+    if (next > now) break;
+    anchor = next;
+    months++;
+  }
+  let rest = Math.max(0, now - anchor);
+  const days = Math.floor(rest / 864e5); rest -= days * 864e5;
+  const hours = Math.floor(rest / 36e5); rest -= hours * 36e5;
+  const minutes = Math.floor(rest / 6e4); rest -= minutes * 6e4;
+  const seconds = Math.floor(rest / 1e3);
+
+  $("c-years").textContent = Math.max(0, years);
+  $("c-months").textContent = months;
+  $("c-days").textContent = days;
+  $("c-hours").textContent = hours;
+  $("c-minutes").textContent = minutes;
+  $("c-seconds").textContent = seconds;
+}
+updateCounter();
+setInterval(updateCounter, 1000);
+
+/* ---------- Gallery and lightbox ---------- */
+const gallery = $("gallery");
+let current = 0;
+
+const isVideo = (src) => /\.(mp4|webm|mov|m4v|ogv)([?#].*)?$/i.test(src) || src.startsWith("data:video");
+let lbMusicWasOn = false;
+
+PHOTOS.forEach((p, i) => {
+  const b = document.createElement("button");
+  b.className = "photo";
+  b.setAttribute("aria-label", (p.src && isVideo(p.src) ? "Play video " : "Open photo ") + (i + 1));
+  if (!p.src) {
+    b.innerHTML = '<div class="ph">' + heartSvg + "<small>Photo " + (i + 1) + "</small></div>";
+  } else if (isVideo(p.src)) {
+    b.innerHTML = '<video src="' + p.src + '#t=0.1" muted playsinline preload="metadata"></video>' +
+      '<span class="play">&#9654;</span><div class="cap">' + p.caption + "</div>";
+  } else {
+    b.innerHTML = '<img src="' + p.src + '" alt="' + p.caption + '" loading="lazy"><div class="cap">' + p.caption + "</div>";
+  }
+  b.addEventListener("click", () => openLightbox(i));
+  gallery.appendChild(b);
+});
+
+function showPhoto(i) {
+  current = (i + PHOTOS.length) % PHOTOS.length;
+  const p = PHOTOS[current];
+  const video = p.src && isVideo(p.src);
+  if (!p.src) {
+    $("lbFrame").innerHTML = '<div class="ph">' + heartSvg + "</div>";
+  } else if (video) {
+    $("lbFrame").innerHTML = '<video src="' + p.src + '" controls autoplay playsinline></video>';
+  } else {
+    $("lbFrame").innerHTML = '<img src="' + p.src + '" alt="' + p.caption + '">';
+  }
+  $("lbCap").textContent = p.caption;
+  /* pause the song while a video plays, bring it back after */
+  if (video && hasSong && !song.paused) { lbMusicWasOn = true; setMusic(false); }
+  if (!video && lbMusicWasOn) { lbMusicWasOn = false; setMusic(true); }
+}
+function openLightbox(i) {
+  showPhoto(i);
+  $("lightbox").classList.add("open");
+  $("lbClose").focus();
+}
+function closeLightbox() {
+  $("lightbox").classList.remove("open");
+  $("lbFrame").innerHTML = "";
+  if (lbMusicWasOn) { lbMusicWasOn = false; setMusic(true); }
+}
+
+$("lbClose").addEventListener("click", closeLightbox);
+$("lbPrev").addEventListener("click", () => showPhoto(current - 1));
+$("lbNext").addEventListener("click", () => showPhoto(current + 1));
+$("lightbox").addEventListener("click", (e) => { if (e.target.id === "lightbox") closeLightbox(); });
+document.addEventListener("keydown", (e) => {
+  if (!$("lightbox").classList.contains("open")) return;
+  if (e.key === "Escape") closeLightbox();
+  if (e.key === "ArrowLeft") showPhoto(current - 1);
+  if (e.key === "ArrowRight") showPhoto(current + 1);
+});
+
+/* ---------- Video ---------- */
+const vid = $("vid");
+if (!vid.getAttribute("src")) {
+  $("videoBox").classList.add("no-video");
+} else {
+  let musicWasOn = false;
+  vid.addEventListener("play", () => { musicWasOn = hasSong && !song.paused; setMusic(false); });
+  vid.addEventListener("pause", () => { if (musicWasOn) setMusic(true); });
+  vid.addEventListener("ended", () => { if (musicWasOn) setMusic(true); });
+}
+
+/* ---------- Surprise ---------- */
+$("surpriseBtn").addEventListener("click", (e) => {
+  const box = $("surprise");
+  box.textContent = SURPRISE_TEXT;
+  box.classList.add("show");
+  const r = box.getBoundingClientRect();
+  burst(innerWidth / 2, Math.max(120, r.top + 20), 40);
+  setTimeout(() => burst(innerWidth * 0.25, Math.max(120, r.top), 25), 250);
+  setTimeout(() => burst(innerWidth * 0.75, Math.max(120, r.top), 25), 450);
+});
+</script>
+</body>
+</html>
